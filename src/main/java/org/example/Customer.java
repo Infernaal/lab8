@@ -1,41 +1,57 @@
 package org.example;
 
 public class Customer {
+
     private String name;
     private String surname;
     private String email;
     private CustomerType customerType;
-    private double companyOverdraftDiscount = 1.0;
-    private AccountService accountService;
+    private Account account;
+    private double overdraftDiscount;
 
-    public Customer(String name, String surname, String email, CustomerType customerType, AccountService accountService) {
+    public Customer(String name, String surname, String email, CustomerType customerType, Account account, double overdraftDiscount) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.customerType = customerType;
-        this.accountService = accountService;
-    }
-
-    public Customer(String name, String email, AccountService accountService, double companyOverdraftDiscount) {
-        this(name, "", email, CustomerType.COMPANY, accountService);
-        this.companyOverdraftDiscount = companyOverdraftDiscount;
+        this.account = account;
+        this.overdraftDiscount = overdraftDiscount;
     }
 
     public void withdraw(double amount, String currency) {
-        accountService.withdraw(this, amount, currency);
+        account.withdraw(amount, currency, customerType, overdraftDiscount);
     }
 
-    public String getFullName() {
-        return name + (surname.isEmpty() ? "" : " " + surname);
+    public String getCustomerInfo() {
+        return String.format("Customer: %s %s, Email: %s, %s", name, surname, email, account);
     }
 
-    public String printCustomerAccount() {
-        return accountService.getAccountDetails(this);
+    public String getName() {
+        return name;
     }
 
-    public String getName() { return name; }
-    public String getSurname() { return surname; }
-    public String getEmail() { return email; }
-    public CustomerType getCustomerType() { return customerType; }
-    public double getCompanyOverdraftDiscount() { return companyOverdraftDiscount; }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public CustomerType getCustomerType() {
+        return customerType;
+    }
+
+    public void setCustomerType(CustomerType customerType) {
+        this.customerType = customerType;
+    }
+
+    @Override
+    public String toString() {
+        return getCustomerInfo();
+    }
 }

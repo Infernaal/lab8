@@ -4,43 +4,42 @@ public class Account {
     private String iban;
     private AccountType type;
     private int daysOverdrawn;
-    private double money;
-    private String currency;
+    private Money balance;
     private Customer customer;
 
-    public Account(AccountType type, int daysOverdrawn) {
-        super();
+    public Account(AccountType type, int daysOverdrawn, Money balance) {
         this.type = type;
         this.daysOverdrawn = daysOverdrawn;
+        this.balance = balance;
     }
 
-
-    public double bankcharge() {
-        double result = 4.5;
-        result += overdraftCharge();
-        return result;
+    public double bankCharge() {
+        return 4.5 + calculateOverdraftCharge();
     }
 
-    private double overdraftCharge() {
+    private double calculateOverdraftCharge() {
         if (type.isPremium()) {
-            double result = 10;
-            if (getDaysOverdrawn() > 7)
-                result += (getDaysOverdrawn() - 7) * 1.0;
-            return result;
-        } else
-            return getDaysOverdrawn() * 1.75;
-    }
-
-    public double overdraftFee() {
-        if (type.isPremium()) {
-            return 0.10;
+            return 10 + Math.max(0, (daysOverdrawn - 7) * 1.0);
         } else {
-            return 0.20;
+            return daysOverdrawn * 1.75;
         }
     }
 
-    public int getDaysOverdrawn() {
-        return daysOverdrawn;
+    public double getOverdraftFeeRate(CustomerType customerType) {
+        return type.isPremium() && customerType == CustomerType.COMPANY ? 0.10 : 0.20;
+    }
+
+    public void withdraw(double amount, String currency, CustomerType customerType, double discount) {
+        if (!balance.getCurrency().equals(currency)) {
+            throw new RuntimeException("Currency mismatch: Can't withdraw " + currency);
+        }
+        double overdraftFee = calculateOverdraftFee(amount, customerType, discount);
+        balance.subtract(amount + overdraftFee);
+    }
+
+    private double calculateOverdraftFee(double amount, CustomerType customerType, double discount) {
+        if (balance.getAmount() >= 0) return 0;
+        return amount * getOverdraftFeeRate(customerType) * discount;
     }
 
     public String getIban() {
@@ -51,38 +50,24 @@ public class Account {
         this.iban = iban;
     }
 
-    public void setMoney(double money) {
-        this.money = money;
+    public Money getBalance() {
+        return balance;
     }
 
-    public double getMoney() {
-        return money;
+    public void setBalance(Money balance) {
+        this.balance = balance;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public int getDaysOverdrawn() {
+        return daysOverdrawn;
     }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
-
 
     public AccountType getType() {
         return type;
     }
 
-
-    public String printCustomer() {
-        return customer.getName() + " " + customer.getEmail();
-    }
-
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
+    @Override
+    public String toString() {
+        return "Account IBAN: " + iban + ", Balance: " + balance + ", Account type: " + type;
     }
 }
