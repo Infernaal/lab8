@@ -35,7 +35,10 @@ public class AccountService {
         return amount * account.overdraftFee() * feeMultiplier;
     }
 
-    public Account getAccount() {
-        return account;
+    public String getAccountDetails(Customer customer) {
+        return customer.getFullName() + " Account: IBAN: " + account.getIban()
+                + ", Money: " + account.getMoney()
+                + ", Days Overdrawn: " + account.getDaysOverdrawn()
+                + ", Account type: " + account.getType();
     }
 }
